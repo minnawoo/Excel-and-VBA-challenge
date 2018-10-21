@@ -92,6 +92,9 @@ Function CreateSummaryTable()
             ' Update ticker_num, ticker_name, percent_change, and stock_volume for next row
             ticker_num = ticker_num + 1
             ticker_name = Sheets(sheet_num).Range("I" & ticker_num)
+            If Sheets(sheet_num).Range("K" & ticker_num) = "n/a" Then ' n/a percent change
+                Exit Do
+            End If
             percent_change = Sheets(sheet_num).Range("K" & ticker_num)
             stock_volume = Sheets(sheet_num).Range("L" & ticker_num)
         Loop
@@ -108,6 +111,9 @@ Function CreateSummaryTable()
         ' Greatest total volume
         Sheets(sheet_num).Range("P4") = max_vol(1)
         Sheets(sheet_num).Range("Q4") = max_vol(2)
+        
+        ' Autofit columns
+        Cells.EntireColumn.AutoFit
         
     Next sheet_num
 End Function
@@ -220,9 +226,8 @@ Function CalculateYearlyChangeOfEachStock()
     Next sheet_num
 End Function
 Function TotalVolumeOfEachStock()
-Attribute TotalVolumeOfEachStock.VB_ProcData.VB_Invoke_Func = " \n14"
 '
-' TotalVolumeOfEachStock Macro for all worksheets
+' TotalVolumeOfEachStock Function for all worksheets
 '
 
 '
@@ -230,16 +235,21 @@ Attribute TotalVolumeOfEachStock.VB_ProcData.VB_Invoke_Func = " \n14"
     Dim num_worksheets As Integer
     num_worksheets = ActiveWorkbook.Worksheets.Count
     
-    sheet_num = 3
-    
-    ' '---------------------
     ' Loop through each sheet
-    ' '---------------------
     For sheet_num = 1 To num_worksheets
         
+        ' Sort
+        With Sheets(sheet_num).Sort
+             .SortFields.Add Key:=Range("A1"), Order:=xlAscending
+             .SortFields.Add Key:=Range("B1"), Order:=xlAscending
+             .SetRange Columns("A:G")
+             .Header = xlYes
+             .Apply
+        End With
+    
         ' Populate headers
         Sheets(sheet_num).Range("I1") = "Ticker"
-        Sheets(sheet_num).Range("J1") = "Total Stock Volume"
+        Sheets(sheet_num).Range("L1") = "Total Stock Volume"
         
         ' Declare and initialize unique_ticker_count with 0
         Dim unique_ticker_count As Integer
@@ -251,8 +261,11 @@ Attribute TotalVolumeOfEachStock.VB_ProcData.VB_Invoke_Func = " \n14"
         
         ' Declare and initialize ticker_name with name of first stock and stock_volume with volume of first stock
         Dim ticker_name As String
+        Dim previous_ticker_name As String
         Dim stock_volume As Double
         ticker_name = Sheets(sheet_num).Range("A" & row_num)
+        previous_ticker_name = ticker_name
+        
         stock_volume = CDbl(Sheets(sheet_num).Range("G" & row_num).Value)
         
         ' Declare and initialize boolean, ticker_exists, with False
@@ -260,51 +273,34 @@ Attribute TotalVolumeOfEachStock.VB_ProcData.VB_Invoke_Func = " \n14"
         ticker_exists = False
         
         ' Declare a new stock_volume_array of size unique_ticker_count and two columns
-        ReDim stock_volume_array(9999, 1) As String ' Column 1(index 0): ticker name. Column 2(index 1): total volume
+        ReDim stock_volume_array(9999, 1) As Variant ' Column 1(index 0): ticker name. Column 2(index 1): total volume
         
         ' Loop through rows and find the number of unique ticker names
         Do While (ticker_name <> "")
             
-            ' Loop through stock_volume_array (but exit if nothing is found in ticker_name column)
-            For i = 0 To UBound(stock_volume_array)
-            
-                ' Check if ticker name is already in array
-                If stock_volume_array(i, 0) = "" Then ' Nothing to check in the rest of the array
+            If ticker_name = previous_ticker_name Then
                 
-                    ' Exit the for loop
-                    Exit For
-                ElseIf stock_volume_array(i, 0) = ticker_name Then
+                ' Add volume of row to total stock volume
+                stock_volume_array(unique_ticker_count, 1) = stock_volume_array(unique_ticker_count, 1) + stock_volume
+            Else
+            
+                ' Increment unique_ticker_count
+                unique_ticker_count = unique_ticker_count + 1
                 
-                    ' Add volume of row to total stock volume
-                    stock_volume_array(i, 1) = CDbl(stock_volume_array(i, 1)) + stock_volume
-                    
-                    ' Change ticker_exists to true
-                    ticker_exists = True
-                    
-                    ' Exit the for loop
-                    Exit For
-                End If
-            Next i
-            
-            ' If ticker does not already exist in array, add it
-            If ticker_exists = False Then
-            
                 ' Store ticker_name and stock_volume
                 stock_volume_array(unique_ticker_count, 0) = ticker_name
                 stock_volume_array(unique_ticker_count, 1) = stock_volume
-                
-                ' Increment unique_ticker_count
-                unique_ticker_count = unique_ticker_count + 1
             End If
             
-            ' Update ticker_name and stock_volume for next row
+            ' Update the previous_ticker_name to current ticker_name for next loop, the row_num to the next row
+            ' in Column A, and the corresponding ticker_name and stock_volume
+            previous_ticker_name = ticker_name
             row_num = row_num + 1
-            ticker_name = Sheets(sheet_num).Range("A" & row_num)
+            ticker_name = Sheets(sheet_num).Range("A" & row_num) ' new ticker name
             stock_volume = CDbl(Sheets(sheet_num).Range("G" & row_num).Value)
             
             ' Reset ticker_exists to false
             ticker_exists = False
-            
         Loop
         
         ' Loop through array and print out results
@@ -323,3 +319,4 @@ Attribute TotalVolumeOfEachStock.VB_ProcData.VB_Invoke_Func = " \n14"
         Next i
     Next sheet_num
 End Function
+
