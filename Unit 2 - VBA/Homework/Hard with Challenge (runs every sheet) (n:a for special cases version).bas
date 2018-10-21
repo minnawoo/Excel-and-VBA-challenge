@@ -1,11 +1,35 @@
 Attribute VB_Name = "Module1"
-Sub StockAnalysis()
+' BONUS MODULE
+
+Sub StockAnalysisWithTransactionHistory()
+
 '
-' StockAnalysis Macro for all worksheets
+' Analyzes stock and prints out transaction history of sheet modifications for all worksheets
 '
 
 '
- ' '-------------------------------
+    ' '-----------------------------------------
+    ' Check if the Transaction History sheet exists already
+    ' '-----------------------------------------
+    If SheetExists("Transaction History") = False Then
+        
+        ' Create the sheet
+        Dim new_ws As Worksheet
+        Set new_ws = Sheets.Add
+        new_ws.Name = "Transaction History"
+    Else
+        
+        ' Clear the sheet
+        Sheets("Transaction History").UsedRange.ClearContents
+    End If
+    
+    ' Set headers
+    Sheets("Transaction History").Range("A1") = "Date and Time Stamp"
+    Sheets("Transaction History").Range("B1") = "Transaction Description"
+    Sheets("Transaction History").Columns(1).HorizontalAlignment = xlCenter
+    Sheets("Transaction History").Columns(2).HorizontalAlignment = xlLeft
+
+    ' '-------------------------------
     ' Declare 1D variables
     ' '-------------------------------
     Dim unique_ticker_count As Integer
@@ -27,6 +51,9 @@ Sub StockAnalysis()
     ' Loop through each sheet
     ' '---------------------
     For Each ws In Worksheets
+    
+        ' Check if the sheet is the Transaction History sheet
+        If ws.Name = "Transaction History" Then GoTo ContinueLoop
         
         ' '------------------------------------------
         ' Sort the sheet first by Column A then by Column B
@@ -39,9 +66,9 @@ Sub StockAnalysis()
              .Apply
         End With
         
-        ' Print transaction onto transaction history
-        'Sheets(format(now(), "yyyy-MM-dd hh:mm:ss")
-
+        ' Stamp transaction into Transaction History sheet
+        StampTransaction ("Sorted Sheet " & ws.Name)
+        
         ' '-------------------------------
         ' Populate headers and table labels
         ' '-------------------------------
@@ -55,6 +82,9 @@ Sub StockAnalysis()
         ws.Range("O4") = "Greatest Total Volume"
         ws.Range("P1") = "Ticker"
         ws.Range("Q1") = "Value"
+        
+        ' Stamp transaction into Transaction History sheet
+        StampTransaction ("Populated headers for Sheet " & ws.Name)
         
         ' '-------------------------------
         ' Declare a new 2D array of arbitrarily large size and four columns
@@ -192,6 +222,9 @@ Sub StockAnalysis()
             ws.Range("K" & i + 2) = stock_volume_array(i, 3)
         Next i
         
+        ' Stamp transaction into Transaction History sheet
+        StampTransaction ("Printed preliminary stock volume analysis for Sheet " & ws.Name)
+        
         ' '-----------------------------
         ' Print out summary table and format
         ' '------------------------------
@@ -215,6 +248,9 @@ Sub StockAnalysis()
         ' Autofit columns
         Cells.EntireColumn.AutoFit
         
+        ' Stamp transaction into Transaction History sheet
+        StampTransaction ("Printed summary table for Sheet " & ws.Name & " and formatted columns")
+        
         ' '----------------------------
         ' Reset max and min variables to 0
         ' '----------------------------
@@ -222,6 +258,28 @@ Sub StockAnalysis()
         max_decr(2) = 0
         max_vol(2) = 0
         
+ContinueLoop:
     Next ws
 
+    ' Autofit Transaction History sheet
+    Sheets("Transaction History").Cells.EntireColumn.AutoFit
+    Sheets("Transaction History").Range("A1:B1").Font.Bold = True
+    
 End Sub
+Function SheetExists(sheetToFind As String) As Boolean
+    ' Initialize return value as False
+    SheetExists = False
+    For Each ws In Worksheets
+        If sheetToFind = ws.Name Then
+            SheetExists = True
+            Exit Function
+        End If
+    Next ws
+End Function
+Function StampTransaction(description As String)
+    
+    lastrow = Range("A999999").End(xlUp).Row
+    Sheets("Transaction History").Range("A" & lastrow + 1) = Format(Now(), "yyyy-MM-dd hh:mm:ss")
+    Sheets("Transaction History").Range("B" & lastrow + 1) = description
+    
+End Function
