@@ -1,1 +1,2 @@
-UofT SCS Data Analytic Bootcamp Assignments (Advanced Excel and VBA)
+# UofT SCS Data Analytics Bootcamp Unit 1 to 2
+Advanced Excel and VBA Assignments
