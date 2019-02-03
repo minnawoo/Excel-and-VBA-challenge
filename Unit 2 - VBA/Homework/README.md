@@ -15,7 +15,7 @@ You are well on your way to becoming a programmer and Excel master! In this home
 
 ### Stock market analyst
 
-![stock Market](../Images/stockmarket.jpg)
+![stock Market](../../Images/stockmarket.jpg)
 
 ### Easy
 
@@ -25,7 +25,7 @@ You are well on your way to becoming a programmer and Excel master! In this home
 
 * Your result should look as follows (note: all solution images are for 2015 data).
 
-![easy_solution](../Images/easy_solution.png)
+![easy_solution](../../Images/easy_solution.png)
 
 ### Moderate
 
@@ -43,7 +43,7 @@ You are well on your way to becoming a programmer and Excel master! In this home
 
 * The result should look as follows.
 
-![moderate_solution](../Images/moderate_solution.png)
+![moderate_solution](../../Images/moderate_solution.png)
 
 ### Hard
 
@@ -53,7 +53,7 @@ You are well on your way to becoming a programmer and Excel master! In this home
 
 * Solution will look as follows.
 
-![hard_solution](../Images/hard_solution.png)
+![hard_solution](../../Images/hard_solution.png)
 
 ### CHALLENGE
 
